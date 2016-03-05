@@ -35,17 +35,13 @@ func ComputeMD5(filePath string) ([]byte, error) {
 }
 
 func visit(path string, f os.FileInfo, err error) error {
-	if err != nil || f.Size() == 0 {
+	if err != nil || f.Size() == 0 || f.IsDir() {
 		return nil
 	}
 
 	if f.Size() >= files.minSize {
 		fmt.Printf("Visited: %s, %d\n", path, f.Size())
 
-		if files.sizes == nil {
-			files.sizes = make(map[int64][]string, 10)
-			fmt.Println("Here")
-		}
 		files.sizes[f.Size()] = append(files.sizes[f.Size()], path)
 		files.fileList = append(files.fileList, path)
 	}

@@ -54,7 +54,10 @@ func main() {
 		red("Scanning: %s\n", r)
 		err := filepath.Walk(r, visit)
 
-		fmt.Printf("filepath.Walk() returned %v\n", err)
+		if err != nil {
+			fmt.Printf("filepath.Walk() returned %v\n", err)
+		}
+
 	}
 
 	for size, v := range files.sizes {
