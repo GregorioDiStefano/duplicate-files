@@ -1,4 +1,11 @@
 language: go
 go:
 - tip
-script: python tests.py
+
+
+install:
+  - go get github.com/fatih/color
+
+script: 
+  - go build
+  - python tests.py
