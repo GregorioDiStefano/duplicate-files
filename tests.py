@@ -3,9 +3,9 @@ import commands
 
 
 actual = commands.getoutput("./duplicate-files -min-size=1b -dir 'tests'")
-
+print actual
 expected = commands.getoutput("cd tests && find -not -empty -type f -printf '%s\n' | sort -rn | uniq -d | xargs -I{} -n1 find -type f -size {}c -print0 | xargs -0 md5sum | sort | uniq -w32 --all-repeated=separate")
-
+print expected
 for i in expected.splitlines():
     assert i.split()[0] in actual
 

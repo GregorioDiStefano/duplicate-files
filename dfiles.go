@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"os"
 
 	"github.com/fatih/color"
 )
@@ -37,8 +38,16 @@ func SizeStringToBytes() int64 {
 }
 
 func init() {
-	flag.String("dir", "", "Directories to scan")
+	currentDirectory, err := os.Getwd()
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to determine the current directory")
+		currentDirectory = "/"
+	}
+
+	flag.String("dir", currentDirectory , "Directories to scan")
 	flag.String("min-size", "1G", "Minimum file size to consider")
+	flag.Bool("verbose", false, "Verbose logging to stdout")
 }
 
 func main() {
@@ -60,18 +69,27 @@ func main() {
 
 	}
 
+	fmt.Println("Done")
+
 	for size, v := range files.sizes {
+
 		if len(v) > 1 {
+
 			green := color.New(color.FgGreen).PrintfFunc()
 			tmp := make(map[string][]string, 10)
 
 			for i := 0; i < len(v); i++ {
 				hash, err := ComputeMD5(v[i])
+
 				if err != nil {
-					fmt.Errorf("Unable to calculate md5 of: %s", v[i])
+					fmt.Fprintf(os.Stderr, "Unable to calculate md5 of: %s", v[i])
+					continue
 				}
+
+
 				hashHex := hex.EncodeToString(hash)
 				tmp[hashHex] = append(tmp[hashHex], v[i])
+
 			}
 
 			for k := range tmp {

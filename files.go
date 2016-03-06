@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"errors"
 )
 
 type Files struct {
@@ -20,12 +21,18 @@ func ComputeMD5(filePath string) ([]byte, error) {
 	hash := md5.New()
 
 	file, err := os.Open(filePath)
-	if err != nil {
+	defer file.Close()
+
+	if err != nil  {
 		fmt.Println("Failed opening:", filePath)
 		return result, err
 	}
 
-	defer file.Close()
+
+	if err != nil {
+		fmt.Println("File failed to open or is not regular:", filePath)
+		return result, errors.New("Error")
+	}
 
 	if _, err := io.Copy(hash, file); err != nil {
 		return result, err
@@ -39,8 +46,10 @@ func visit(path string, f os.FileInfo, err error) error {
 		return nil
 	}
 
-	if f.Size() >= files.minSize {
-		fmt.Printf("Visited: %s, %d\n", path, f.Size())
+	fileMode := f.Mode().IsRegular()
+
+	if f.Size() >= files.minSize && fileMode {
+			LogVerbose("Visited: %s, %d\n", path, f.Size())
 
 		files.sizes[f.Size()] = append(files.sizes[f.Size()], path)
 		files.fileList = append(files.fileList, path)
