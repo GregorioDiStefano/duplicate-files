@@ -15,8 +15,7 @@ func SizeStringToBytes() int64 {
 	minSizeStr := flag.Lookup("min-size").Value.String()
 	minSizeStr = strings.ToLower(minSizeStr)
 
-	var minSizeInt int64
-	var d int64
+	var minSizeInt, d int64
 	var s string
 
 	fmt.Sscanf(minSizeStr, "%d%s", &d, &s)
@@ -24,14 +23,14 @@ func SizeStringToBytes() int64 {
 	switch s {
 	case "b":
 		minSizeInt = d
-	case "k":
+	case "k", "kb":
 		minSizeInt = d * 1024
-	case "m":
+	case "m", "mb":
 		minSizeInt = d * 1024 * 1024
-	case "g":
+	case "g", "gb":
 		minSizeInt = d * 1024 * 1024 * 1024
 	default:
-		panic("Error reading min-size value")
+		panic("Error reading min-size value: " + s)
 	}
 
 	return minSizeInt
@@ -48,6 +47,7 @@ func init() {
 	flag.String("dir", currentDirectory , "Directories to scan")
 	flag.String("min-size", "1G", "Minimum file size to consider")
 	flag.Bool("verbose", false, "Verbose logging to stdout")
+	flag.Bool("debug", false, "Debug logging to stdout")
 }
 
 func main() {
@@ -85,7 +85,6 @@ func main() {
 					fmt.Fprintf(os.Stderr, "Unable to calculate md5 of: %s", v[i])
 					continue
 				}
-
 
 				hashHex := hex.EncodeToString(hash)
 				tmp[hashHex] = append(tmp[hashHex], v[i])

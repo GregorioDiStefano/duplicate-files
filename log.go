@@ -13,3 +13,10 @@ func LogVerbose(format string, args ...interface{}) {
     fmt.Fprintf(os.Stderr, format, args...)
   }
 }
+
+func LogDebug(format string, args ...interface{}) {
+  set, _ := strconv.ParseBool(flag.Lookup("debug").Value.String())
+  if set {
+    fmt.Fprintf(os.Stderr, format, args...)
+  }
+}

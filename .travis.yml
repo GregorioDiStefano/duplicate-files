@@ -9,3 +9,5 @@ install:
 script: 
   - go build
   - python tests.py
+  - go test -v
+
