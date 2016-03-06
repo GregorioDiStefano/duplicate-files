@@ -4,9 +4,9 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
-	"os"
 
 	"github.com/fatih/color"
 )
@@ -44,17 +44,32 @@ func init() {
 		currentDirectory = "/"
 	}
 
-	flag.String("dir", currentDirectory , "Directories to scan")
+	flag.String("dir", currentDirectory, "Directories to scan")
 	flag.String("min-size", "1G", "Minimum file size to consider")
 	flag.Bool("verbose", false, "Verbose logging to stdout")
 	flag.Bool("debug", false, "Debug logging to stdout")
 }
 
+func printDuplicateFiles(tmp map[string][]string, size int64) {
+	green := color.New(color.FgGreen).PrintfFunc()
+	for k := range tmp {
+		if len(tmp[k]) > 1 {
+			green("%dM, %s\n", size/(1024*1024), k)
+
+			for _, files := range tmp[k] {
+				green("%s\n", files)
+			}
+
+			fmt.Println()
+		}
+	}
+}
+
 func main() {
 	flag.Parse()
 	roots := flag.Lookup("dir").Value.String()
-	files.minSize = SizeStringToBytes()
 
+	files.minSize = SizeStringToBytes()
 	files.fileList = make([]string, 10)
 	files.sizes = make(map[int64][]string, 10)
 
@@ -74,35 +89,20 @@ func main() {
 	for size, v := range files.sizes {
 
 		if len(v) > 1 {
-
-			green := color.New(color.FgGreen).PrintfFunc()
 			tmp := make(map[string][]string, 10)
 
 			for i := 0; i < len(v); i++ {
 				hash, err := ComputeMD5(v[i])
 
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Unable to calculate md5 of: %s", v[i])
+					fmt.Fprintf(os.Stderr, "Unable to calculate md5 of: %s\n", v[i])
 					continue
 				}
 
 				hashHex := hex.EncodeToString(hash)
 				tmp[hashHex] = append(tmp[hashHex], v[i])
-
 			}
-
-			for k := range tmp {
-				if len(tmp[k]) > 1 {
-					green("%dM, %s\n", size/(1024*1024), k)
-
-					for _, files := range tmp[k] {
-						green("%s\n", files)
-					}
-
-					fmt.Println()
-
-				}
-			}
+			printDuplicateFiles(tmp, size)
 		}
 	}
 }
