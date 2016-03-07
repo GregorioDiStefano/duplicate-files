@@ -6,6 +6,9 @@ go:
 install:
   - go get github.com/fatih/color
 
+before_script:
+  - go tool vet -v *.go
+
 script: 
   - go build
   - python tests.py
