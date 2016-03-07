@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
 func SizeStringToBytes() int64 {
@@ -33,6 +31,7 @@ func SizeStringToBytes() int64 {
 		panic("Error reading min-size value: " + s)
 	}
 
+	LogDebug("minSize for file set to: %d\n", minSizeInt)
 	return minSizeInt
 }
 
@@ -40,8 +39,8 @@ func init() {
 	currentDirectory, err := os.Getwd()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to determine the current directory")
-		currentDirectory = "/"
+		LogVerbose("red", "Unable to determine the current directory")
+		os.Exit(1)
 	}
 
 	flag.String("dir", currentDirectory, "Directories to scan")
@@ -50,17 +49,16 @@ func init() {
 	flag.Bool("debug", false, "Debug logging to stdout")
 }
 
-func printDuplicateFiles(tmp map[string][]string, size int64) {
-	green := color.New(color.FgGreen).PrintfFunc()
-	for k := range tmp {
-		if len(tmp[k]) > 1 {
-			green("%dM, %s\n", size/(1024*1024), k)
+func printDuplicateFiles(duplicates map[string][]string, size int64) {
 
-			for _, files := range tmp[k] {
-				green("%s\n", files)
+	for k := range duplicates {
+		if len(duplicates[k]) > 1 {
+			DefaultPrint("green", "%dM, %s\n", size/(1024*1024), k)
+
+			for _, files := range duplicates[k] {
+				DefaultPrint("green", "%s\n", files)
 			}
-
-			fmt.Println()
+			DefaultPrint(nil, "\n")
 		}
 	}
 }
@@ -74,8 +72,7 @@ func main() {
 	files.sizes = make(map[int64][]string, 10)
 
 	for _, r := range strings.Split(roots, " ") {
-		red := color.New(color.FgRed).PrintfFunc()
-		red("Scanning: %s\n", r)
+		DefaultPrint("green", "Scanning: %s\n", r)
 		err := filepath.Walk(r, visit)
 
 		if err != nil {
@@ -84,7 +81,7 @@ func main() {
 
 	}
 
-	fmt.Println("Done")
+	DefaultPrint(nil, "Done")
 
 	for size, v := range files.sizes {
 
@@ -95,7 +92,6 @@ func main() {
 				hash, err := ComputeMD5(v[i])
 
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Unable to calculate md5 of: %s\n", v[i])
 					continue
 				}
 

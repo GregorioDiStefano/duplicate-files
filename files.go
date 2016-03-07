@@ -2,10 +2,10 @@ package main
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"io"
 	"os"
-	"errors"
 )
 
 type Files struct {
@@ -23,14 +23,13 @@ func ComputeMD5(filePath string) ([]byte, error) {
 	file, err := os.Open(filePath)
 	defer file.Close()
 
-	if err != nil  {
+	if err != nil {
 		fmt.Println("Failed opening:", filePath)
 		return result, err
 	}
 
-
 	if err != nil {
-		fmt.Println("File failed to open or is not regular:", filePath)
+		fmt.Println("md5 not computed - file failed to open or is not regular:", filePath)
 		return result, errors.New("Error")
 	}
 
@@ -49,7 +48,7 @@ func visit(path string, f os.FileInfo, err error) error {
 	fileMode := f.Mode().IsRegular()
 
 	if f.Size() >= files.minSize && fileMode {
-			LogVerbose("Visited: %s, %d\n", path, f.Size())
+		LogVerbose("green", "Visited: %s, %d\n", path, f.Size())
 
 		files.sizes[f.Size()] = append(files.sizes[f.Size()], path)
 		files.fileList = append(files.fileList, path)
