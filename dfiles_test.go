@@ -35,7 +35,7 @@ func TestMain(t *testing.T) {
 }
 
 func TestMD5(t *testing.T) {
-	hash_bytes, _ := ComputeMD5(testDirectory + "/testfile.1")
+	hash_bytes, _ := ComputeHash("md5", testDirectory+"/testfile.1")
 	hash_str := hex.EncodeToString(hash_bytes)
 	if hash_str != "d866522038b447a2951dab80ec7f7542" {
 		t.Error("Invalid hash returned")
